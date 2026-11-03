@@ -334,3 +334,47 @@ export async function importCategories(
   });
   return { created, updated };
 }
+
+/* ------------------------ Importar movimientos ------------------------ */
+
+export interface ImportTxRow {
+  date: string;
+  description: string;
+  amount: number;
+  type: 'ingreso' | 'egreso';
+  accountId: string;
+  categoryId: string;
+  subcategoryId: string | null;
+}
+
+/**
+ * Guarda movimientos importados. Valida cada uno (valor, fecha, cuenta y categoría del tipo correcto).
+ * A diferencia del registro manual, permite que falte la subcategoría (datos históricos).
+ */
+export async function importTransactions(rows: ImportTxRow[]): Promise<{ added: number; skipped: number }> {
+  const [accounts, categories] = await Promise.all([db.accounts.toArray(), db.categories.toArray()]);
+  const accIds = new Set(accounts.map((a) => a.id));
+  const byId = new Map(categories.map((c) => [c.id, c]));
+  const now = Date.now();
+  const ok: Transaction[] = [];
+  let skipped = 0;
+  rows.forEach((r, i) => {
+    const cat = byId.get(r.categoryId);
+    const sub = r.subcategoryId ? byId.get(r.subcategoryId) : null;
+    const amount = Math.round(r.amount);
+    if (
+      !(amount > 0) || !/^\d{4}-\d{2}-\d{2}$/.test(r.date) || !accIds.has(r.accountId) ||
+      !cat || cat.parentId !== null || cat.kind !== r.type || (r.subcategoryId && (!sub || sub.parentId !== cat.id))
+    ) {
+      skipped++;
+      return;
+    }
+    ok.push({
+      id: newId(), type: r.type, amount, accountId: r.accountId, toAccountId: null,
+      categoryId: cat.id, subcategoryId: sub?.id ?? null, date: r.date, note: r.description.trim().slice(0, 140),
+      createdAt: now + i, updatedAt: now + i,
+    });
+  });
+  await db.transactions.bulkAdd(ok);
+  return { added: ok.length, skipped };
+}

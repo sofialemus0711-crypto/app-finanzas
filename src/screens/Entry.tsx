@@ -4,6 +4,7 @@ import type { Transaction, TxType } from '../db/types';
 import { Icon } from '../components/Icon';
 import { ConfirmButton, Sheet, useToast } from '../components/ui';
 import { summarize } from '../lib/calc';
+import { buildIndex, suggest } from '../lib/classify';
 import { friendlyDay, today } from '../lib/dates';
 import { useAccounts, useBalances, useCategories, useCategoryTree, useSettings, useTemplates, useTransactions } from '../lib/hooks';
 import { formatMoney } from '../lib/money';
@@ -75,6 +76,22 @@ export function Entry({ initialType = 'egreso', editId = null }: Props) {
   }, [accountId, settings, accounts, editId]);
 
   const amount = parseInt(digits || '0', 10);
+  const index = useMemo(() => (categories && txs ? buildIndex(categories, txs) : null), [categories, txs]);
+  const [suggested, setSuggested] = useState(false);
+
+  /** Pasa a elegir categoría; si escribiste una nota, preselecciona la categoría que corresponde. */
+  function goStep2() {
+    if (amount <= 0) return;
+    if (type !== 'transferencia' && !categoryId && note.trim() && index) {
+      const s = suggest(note, type, index);
+      if (s) {
+        setCategoryId(s.categoryId);
+        setSubcategoryId(s.subcategoryId);
+        setSuggested(true);
+      }
+    }
+    setStep(2);
+  }
 
   // Teclado físico (computador)
   useEffect(() => {
@@ -83,7 +100,7 @@ export function Entry({ initialType = 'egreso', editId = null }: Props) {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
       if (/^\d$/.test(e.key)) press(e.key);
       else if (e.key === 'Backspace') press('⌫');
-      else if (e.key === 'Enter' && amount > 0) setStep(2);
+      else if (e.key === 'Enter' && amount > 0) goStep2();
       else if (e.key === 'Escape') goBack();
     };
     window.addEventListener('keydown', onKey);
@@ -242,7 +259,7 @@ export function Entry({ initialType = 'egreso', editId = null }: Props) {
               ))}
             </div>
 
-            <button className="btn primary lg block" disabled={amount <= 0} onClick={() => setStep(2)}>
+            <button className="btn primary lg block" disabled={amount <= 0} onClick={goStep2}>
               {type === 'transferencia' ? 'Elegir cuentas' : 'Elegir categoría'} <Icon name="next" size={20} stroke={2.2} />
             </button>
           </>
@@ -266,7 +283,10 @@ export function Entry({ initialType = 'egreso', editId = null }: Props) {
             ) : (
               <>
                 <div className="stack" style={{ gap: 10 }}>
-                  <div className="section-label">Categoría</div>
+                  <div className="between">
+                    <div className="section-label">Categoría</div>
+                    {suggested && categoryId && <span className="small" style={{ color: 'var(--primary)', fontWeight: 600 }}>Sugerida por tu nota</span>}
+                  </div>
                   {roots.length === 0 ? (
                     <div className="empty" style={{ padding: 12 }}>
                       <p>Aún no tienes categorías de {type === 'egreso' ? 'egresos' : 'ingresos'}.</p>
@@ -276,7 +296,7 @@ export function Entry({ initialType = 'egreso', editId = null }: Props) {
                     <div className="cat-grid">
                       {roots.map((c) => (
                         <button key={c.id} className={'cat-tile' + (categoryId === c.id ? ' on' : '')} aria-pressed={categoryId === c.id}
-                          onClick={() => { setCategoryId(c.id); setSubcategoryId(null); }}>
+                          onClick={() => { setCategoryId(c.id); setSubcategoryId(null); setSuggested(false); }}>
                           <span className="ci" style={{ color: c.color }}><Icon name={c.icon} size={24} /></span>
                           {c.name}
                         </button>
@@ -291,7 +311,7 @@ export function Entry({ initialType = 'egreso', editId = null }: Props) {
                     <div className="chips wrap">
                       {subs.map((s) => (
                         <button key={s.id} className={'chip' + (subcategoryId === s.id ? ' on' : '')} style={{ minHeight: 44 }} aria-pressed={subcategoryId === s.id}
-                          onClick={() => setSubcategoryId(s.id)}>{s.name}</button>
+                          onClick={() => { setSubcategoryId(s.id); setSuggested(false); }}>{s.name}</button>
                       ))}
                     </div>
                   </div>

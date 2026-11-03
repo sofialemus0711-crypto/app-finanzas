@@ -1,27 +1,72 @@
-import { gridToStreams, parseStreams, splitTextLine, textToStreams, wordsToStreams, type OcrWord, type ParseResult } from './importParse';
+import { gridToMovements, gridToStreams, parseStreams, splitTextLine, textToMovements, textToStreams, wordsToLines, wordsToStreams, type OcrWord, type ParsedMovement, type ParseResult } from './importParse';
+import { normalize } from './classify';
+
+export interface ImportResult extends ParseResult {
+  movements: ParsedMovement[];
+}
+
+/** Quita de las categorías las filas que en realidad son movimientos ya detectados. */
+function combine(cats: ParseResult, movements: ParsedMovement[]): ImportResult {
+  const descs = new Set(movements.map((m) => normalize(m.description)));
+  const rows = cats.rows.filter((r) => !descs.has(normalize(r.subcategory ? `${r.category} ${r.subcategory}` : r.category)));
+  return { rows, skippedMovements: 0, movements };
+}
+
+/** Separa un CSV respetando comillas; detecta el separador (; , o tabulación). */
+export function splitCsv(text: string): string[][] {
+  const first = text.split(/\r?\n/).find((l) => l.trim()) ?? '';
+  const sep = ['\t', ';', ','].map((d) => [d, first.split(d).length] as const).sort((a, b) => b[1] - a[1])[0][0];
+  const rows: string[][] = [];
+  let row: string[] = [];
+  let cell = '';
+  let q = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (q) {
+      if (ch === '"' && text[i + 1] === '"') { cell += '"'; i++; }
+      else if (ch === '"') q = false;
+      else cell += ch;
+    } else if (ch === '"') q = true;
+    else if (ch === sep) { row.push(cell); cell = ''; }
+    else if (ch === '\n' || ch === '\r') {
+      if (ch === '\r' && text[i + 1] === '\n') i++;
+      row.push(cell); rows.push(row); row = []; cell = '';
+    } else cell += ch;
+  }
+  if (cell || row.length) { row.push(cell); rows.push(row); }
+  return rows;
+}
 
 /** Excel (.xlsx): lee todas las hojas. La librería se descarga solo cuando se usa. */
-export async function parseExcel(file: File): Promise<ParseResult> {
+export async function parseExcel(file: File): Promise<ImportResult> {
   const { default: readExcelFile } = await import('read-excel-file/browser');
-  const sheets = await readExcelFile(file);
-  const streams = sheets.flatMap((s: { data: unknown[][] }) => gridToStreams(s.data as never));
-  return parseStreams(streams);
+  const sheets: { data: unknown[][] }[] = await readExcelFile(file);
+  const streams = sheets.flatMap((s) => gridToStreams(s.data as never));
+  const movements = sheets.flatMap((s) => gridToMovements(s.data as never));
+  return combine(parseStreams(streams), movements);
 }
 
 /** CSV o texto plano. */
-export async function parseTextFile(file: File): Promise<ParseResult> {
-  return parseStreams(textToStreams(await file.text()));
+export async function parseTextFile(file: File): Promise<ImportResult> {
+  const text = await file.text();
+  if (/\.csv$/i.test(file.name)) {
+    const grid = splitCsv(text);
+    return combine(parseStreams(gridToStreams(grid)), gridToMovements(grid));
+  }
+  return parsePastedText(text);
 }
 
-export function parsePastedText(text: string): ParseResult {
-  return parseStreams(textToStreams(text));
+export function parsePastedText(text: string): ImportResult {
+  const tabular = text.split(/\r?\n/).filter((l) => l.includes('\t') || l.split(';').length > 2).length > 1;
+  const movements = tabular ? gridToMovements(splitCsv(text)) : textToMovements(text);
+  return combine(parseStreams(textToStreams(text)), movements);
 }
 
 /**
  * Foto o captura de pantalla: reconoce el texto en el propio celular (OCR en español),
  * sin enviar la imagen a ningún servidor. Los archivos del lector se descargan la primera vez.
  */
-export async function parseImage(file: File, onProgress: (pct: number, label: string) => void): Promise<ParseResult> {
+export async function parseImage(file: File, onProgress: (pct: number, label: string) => void): Promise<ImportResult> {
   onProgress(0, 'Preparando el lector de imágenes…');
   const { createWorker, OEM } = await import('tesseract.js');
   const base = new URL('./ocr/', window.location.href).href;
@@ -39,7 +84,7 @@ export async function parseImage(file: File, onProgress: (pct: number, label: st
   try {
     // Se lee dos veces (modo automático y modo "texto disperso") y se combinan las palabras:
     // así no se pierden columnas de valores que un solo modo a veces no detecta.
-    let last: ParseResult = { rows: [], skippedMovements: 0 };
+    let last: ImportResult = { rows: [], skippedMovements: 0, movements: [] };
     for (const binarize of [true, false]) {
       const img = await prepare(file, binarize);
       const words: OcrWord[] = [];
@@ -51,9 +96,12 @@ export async function parseImage(file: File, onProgress: (pct: number, label: st
         words.push(...(blocks?.flatMap((b) => b.paragraphs.flatMap((p) => p.lines.flatMap((l) => l.words))) ?? []));
         if (!text) text = String(data.text);
       }
-      last = parseStreams(wordsToStreams(mergeWords(words)));
-      if (last.rows.length === 0) last = parseStreams([text.split('\n').map(splitTextLine)]);
-      if (last.rows.length >= 2) return last;
+      const merged = mergeWords(words);
+      const movements = textToMovements(wordsToLines(merged).join('\n'));
+      let cats = parseStreams(wordsToStreams(merged));
+      if (cats.rows.length === 0) cats = parseStreams([text.split('\n').map(splitTextLine)]);
+      last = combine(cats, movements);
+      if (last.rows.length + last.movements.length >= 2) return last;
     }
     return last;
   } finally {

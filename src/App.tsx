@@ -9,7 +9,7 @@ import { Categories } from './screens/Categories';
 import { Entry } from './screens/Entry';
 import { History } from './screens/History';
 import { ImportTemplate } from './screens/ImportTemplate';
-import { ImportCategories } from './screens/ImportCategories';
+import { Import } from './screens/Import';
 import { Home } from './screens/Home';
 import { Onboarding } from './screens/Onboarding';
 import { Settings } from './screens/Settings';
@@ -63,7 +63,8 @@ function Shell() {
     case '/cuentas': page = <Accounts />; break;
     case '/categorias': page = <Categories key={params.get('tipo') ?? ''} initialKind={(params.get('tipo') as CategoryKind) || 'egreso'} />; break;
     case '/mas': page = <Settings />; break;
-    case '/importar-categorias': page = <ImportCategories />; break;
+    case '/importar-categorias':
+    case '/importar-datos': page = <Import />; break;
     default: page = <Home />;
   }
 
