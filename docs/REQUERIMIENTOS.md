@@ -1,0 +1,119 @@
+# Requerimientos — App de Finanzas Personales
+
+> Documento vivo. Fase 1 (definición de requerimientos). Última actualización: 2026-11-03.
+
+## 1. Visión
+
+Una app personal, muy visual y rápida, para registrar **todos** los ingresos, egresos y transferencias,
+controlar el dinero en cada banco y en efectivo, y ver en tiempo real cómo van las finanzas.
+**Prioridad absoluta:** registrar un movimiento en menos de 5 segundos desde el iPhone.
+
+## 2. Usuarios
+
+- Multiusuario con **cuentas independientes**: cada persona (p. ej. la usuaria y su mamá) inicia sesión
+  con su correo y ve **solo sus propios datos**. No hay datos compartidos entre usuarios.
+- Dispositivo principal: **iPhone**. También uso en computador.
+- Volumen esperado: más de 300 movimientos/mes por usuario.
+
+## 3. Arquitectura
+
+| Aspecto | Decisión |
+|---|---|
+| Tipo de app | PWA instalable (iPhone, Android, computador) |
+| Interfaz | React + TypeScript |
+| Almacenamiento | Local primero (IndexedDB) + sincronización con la nube |
+| Nube / autenticación | Supabase (PostgreSQL + login por correo + seguridad por filas: cada usuario solo accede a lo suyo) |
+| Sin conexión | Sí: se registra sin internet y se sincroniza al recuperar conexión |
+| Montos | Enteros en pesos (sin decimales) para evitar errores de redondeo |
+| Saldos | **Calculados** a partir de los movimientos (nunca se descuadran al editar/eliminar) |
+| Moneda | COP. Modelo de datos preparado para multimoneda, sin activarlo aún |
+| Bloqueo PIN/biometría | **No** (descartado por la usuaria) |
+
+## 4. Registro rápido (iPhone)
+
+- Acceso mediante **Toque posterior** (Ajustes › Accesibilidad › Tocar › Toque posterior → doble toque)
+  ejecutando un Atajo de iOS que abre la app directamente en la pantalla de registro.
+- Alternativa adicional: ícono de la app en la pantalla de inicio que abre en registro rápido.
+- Diseño de pantalla: **teclado numérico primero** (estilo Moneyfy), luego cuadrícula de categorías con íconos.
+- Campos:
+  - **Obligatorios:** tipo (ingreso/egreso), valor, cuenta/banco, categoría, y subcategoría *si la categoría tiene subcategorías*.
+  - **Automáticos:** fecha = hoy; cuenta preseleccionada = última usada.
+  - **Opcionales (expandibles):** cambiar fecha, nota/descripción.
+- También debe existir el formulario completo para registrar con todos los datos.
+- **Plantillas/favoritos:** movimientos frecuentes registrables con un toque.
+
+## 5. Cuentas
+
+- Tipos: ahorros, corriente, billetera digital, efectivo, tarjeta de crédito (soportado para el futuro; hoy no se usa), inversión, otra.
+- Campos: nombre, tipo, ícono/color, saldo inicial, saldo actual (calculado).
+- Cuentas iniciales: los bancos que usa la usuaria + Efectivo (lista por confirmar).
+- **Todas** las cuentas suman al total disponible (no se excluye ninguna).
+- Se pueden **archivar** cuentas sin perder su historial.
+- **Transferencias** entre cuentas propias: no cuentan como ingreso ni egreso.
+
+## 6. Categorías
+
+- La usuaria define su propia lista (no se cargan predeterminadas; lista por recibir).
+- Categorías de ingreso y de egreso, cada una con subcategorías opcionales.
+- Cada categoría tiene **ícono y color**.
+- Crear, editar, eliminar. Al eliminar una categoría con movimientos, la app pide **reasignarlos** a otra antes de borrar.
+
+## 7. Dashboard
+
+- Dinero total disponible y saldo por cuenta.
+- Ingresos, egresos y balance del periodo.
+- % de ingresos gastado (periodo actual) **y promedio de los últimos 3 periodos**.
+- Top de categorías de gasto.
+- Últimos movimientos.
+- Gráficos: ingresos vs egresos, distribución por categoría, evolución del gasto en el periodo, evolución del saldo en el tiempo.
+- Actualización inmediata al registrar.
+
+## 8. Historial
+
+- Listado de todos los movimientos.
+- Filtros: tipo, cuenta, categoría, subcategoría, rango de fechas; búsqueda por descripción.
+- Editar y eliminar, con recálculo automático de saldos y estadísticas.
+
+## 9. Resumen por periodo
+
+- **Periodo configurable**: mes calendario o día de inicio personalizado (p. ej. del 15 al 14).
+- Totales, balance, top categorías, comparación con periodos anteriores, movimientos del periodo.
+- Consulta de periodos anteriores sin pérdida de información.
+
+## 10. Diseño
+
+- Moderno, minimalista, identidad propia (referencia: Moneyfy).
+- Colores diferenciados para ingresos, egresos y balance; paleta acorde a la temática financiera (por elegir).
+- Modo claro y oscuro (automático según el sistema, con opción manual).
+- Interfaz **adaptada** a celular y a computador, no solo reducida.
+- Nombre de la app: por elegir.
+
+## 11. Respaldo
+
+- Copia en la nube (sincronización automática).
+- **Exportar** respaldo completo (Excel/CSV/JSON) e **importar** desde ese respaldo.
+
+## 12. Hoja de ruta de funcionalidades adicionales
+
+| Prioridad | Funcionalidad |
+|---|---|
+| Versión 1 | Plantillas/favoritos · Ocultar saldos · Exportar/importar respaldo · Soporte de tarjeta de crédito (modelo de datos) |
+| Etapa 2 | Presupuestos por categoría con alertas · Gastos/ingresos recurrentes · Deudas y préstamos |
+| Etapa 3 | Metas de ahorro · Recordatorios de pago |
+| Futuro | Etiquetas · Foto de recibo · Cálculo de 4×1000 (GMF) · Exportar a PDF · Multimoneda |
+
+## 13. Fases
+
+1. Requerimientos y planificación ← **actual**
+2. Diseño UX y estructura visual
+3. Cuentas, categorías, ingresos, egresos, transferencias
+4. Dashboard, gráficos, resúmenes
+5. Registro rápido y optimización móvil
+6. Pruebas, seguridad y mejoras
+
+## 14. Pendientes para cerrar la Fase 1
+
+- [ ] Lista de bancos/cuentas a crear
+- [ ] Lista de categorías y subcategorías
+- [ ] Nombre de la app
+- [ ] Paleta de colores
