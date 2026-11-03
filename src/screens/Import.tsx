@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { db } from '../db/db';
 import type { Account, Category, Transaction } from '../db/types';
 import { Icon } from '../components/Icon';
-import { MoneyInput, useToast } from '../components/ui';
+import { DateChip, MoneyInput, useToast } from '../components/ui';
 import { buildIndex, learn, normalize, resolveCategoryText, suggest, type ClassifierIndex } from '../lib/classify';
 import { fromISODate } from '../lib/dates';
 
@@ -379,12 +379,7 @@ export function Import() {
                         </button>
                       </div>
                       <div className="row wrap" style={{ gap: 8 }}>
-                        <label className="chip" style={{ position: 'relative', minHeight: 40, flex: 'none' }} title="Cambiar fecha">
-                          <Icon name="calendar" size={16} /> {compactDate(r.date)}
-                          <input type="date" value={r.date} aria-label="Fecha del movimiento"
-                            onChange={(e) => e.target.value && updateMov(r.key, { date: e.target.value })}
-                            style={{ position: 'absolute', inset: 0, opacity: 0, width: '100%' }} />
-                        </label>
+                        <DateChip compact value={r.date} label={compactDate} onChange={(v) => updateMov(r.key, { date: v })} />
                         <select className="select grow" style={{ minHeight: 40, fontSize: 14, flexBasis: 200 }} value={r.choice} aria-label="Categoría"
                           onChange={(e) => chooseCategory(r, e.target.value)}>
                           <option value="">Elige categoría…</option>

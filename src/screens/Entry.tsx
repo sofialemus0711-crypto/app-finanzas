@@ -2,10 +2,10 @@ import { useEffect, useMemo, useState } from 'react';
 import { db } from '../db/db';
 import type { Transaction, TxType } from '../db/types';
 import { Icon } from '../components/Icon';
-import { ConfirmButton, Sheet, useToast } from '../components/ui';
+import { ConfirmButton, DateChip, Sheet, useToast } from '../components/ui';
 import { summarize } from '../lib/calc';
 import { buildIndex, suggest } from '../lib/classify';
-import { friendlyDay, today } from '../lib/dates';
+import { friendlyDay, shortDate, today } from '../lib/dates';
 import { useAccounts, useBalances, useCategories, useCategoryTree, useSettings, useTemplates, useTransactions } from '../lib/hooks';
 import { formatMoney } from '../lib/money';
 import { periodFor } from '../lib/period';
@@ -98,6 +98,7 @@ export function Entry({ initialType = 'egreso', editId = null }: Props) {
     if (step !== 1) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      if (document.querySelector('.sheet')) return; // hay una hoja abierta (fecha, cuenta)
       if (/^\d$/.test(e.key)) press(e.key);
       else if (e.key === 'Backspace') press('⌫');
       else if (e.key === 'Enter' && amount > 0) goStep2();
@@ -221,13 +222,7 @@ export function Entry({ initialType = 'egreso', editId = null }: Props) {
                 {account?.name ?? 'Cuenta'}
                 {type === 'transferencia' && ' →'}
               </button>
-              <label className="chip" style={{ position: 'relative' }}>
-                <Icon name="calendar" size={18} />
-                {friendlyDay(date)}
-                <input type="date" value={date} max="2100-12-31" onChange={(e) => e.target.value && setDate(e.target.value)}
-                  aria-label="Fecha del movimiento"
-                  style={{ position: 'absolute', inset: 0, opacity: 0, width: '100%' }} />
-              </label>
+              <DateChip value={date} onChange={setDate} />
               <button className="chip" style={{ borderStyle: note ? 'solid' : 'dashed' }} onClick={() => setShowNote((v) => !v)}>
                 <Icon name="note" size={18} />{note ? 'Nota ✓' : '+ Nota'}
               </button>
@@ -333,9 +328,9 @@ export function Entry({ initialType = 'egreso', editId = null }: Props) {
 
             <div className="stack" style={{ gap: 8 }}>
               <div className="grid-2">
-                <label className="field"><span>Fecha</span>
-                  <input className="input" type="date" value={date} onChange={(e) => e.target.value && setDate(e.target.value)} />
-                </label>
+                <div className="field"><span>Fecha</span>
+                  <DateChip value={date} onChange={setDate} label={(v) => `${friendlyDay(v)} · ${shortDate(v)}`} />
+                </div>
                 <label className="field"><span>Nota</span>
                   <input className="input" placeholder="Opcional" value={note} maxLength={140} onChange={(e) => setNote(e.target.value)} />
                 </label>

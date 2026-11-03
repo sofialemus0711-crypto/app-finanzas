@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { Icon } from './Icon';
+import { addDays, friendlyDay, shortDate, today } from '../lib/dates';
 
 /* ------------------------------- Hoja modal ------------------------------- */
 
@@ -8,7 +9,11 @@ export function Sheet({ title, onClose, children }: { title: string; onClose: ()
   useEffect(() => {
     const prev = document.activeElement as HTMLElement | null;
     ref.current?.focus();
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      e.stopPropagation(); // que Escape cierre solo la hoja, no la pantalla de atrás
+      onClose();
+    };
     document.addEventListener('keydown', onKey);
     return () => {
       document.removeEventListener('keydown', onKey);
@@ -100,5 +105,47 @@ export function ConfirmButton({ label, confirmLabel, onConfirm, className = 'btn
     <button type="button" className={className} onClick={() => (armed ? onConfirm() : setArmed(true))} onBlur={() => setArmed(false)}>
       {armed ? confirmLabel : label}
     </button>
+  );
+}
+
+/* ------------------------------ Selector de fecha ------------------------------ */
+
+
+/**
+ * Botón con la fecha que abre una hoja con atajos (Hoy, Ayer, Anteayer) y un calendario.
+ * Funciona igual en iPhone, Android y computador.
+ */
+export function DateChip({ value, onChange, label, compact }: { value: string; onChange: (v: string) => void; label?: (v: string) => string; compact?: boolean }) {
+  const [open, setOpen] = useState(false);
+  const t = today();
+  const quick = [
+    { v: t, l: 'Hoy' },
+    { v: addDays(t, -1), l: 'Ayer' },
+    { v: addDays(t, -2), l: 'Anteayer' },
+  ];
+  const pick = (v: string) => {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(v)) onChange(v);
+    setOpen(false);
+  };
+  return (
+    <>
+      <button type="button" className="chip" style={compact ? { minHeight: 40, flex: 'none' } : undefined} onClick={() => setOpen(true)} aria-label={`Fecha: ${shortDate(value)}. Cambiar`}>
+        <Icon name="calendar" size={compact ? 16 : 18} />
+        {label ? label(value) : friendlyDay(value)}
+      </button>
+      {open && (
+        <Sheet title="Fecha del movimiento" onClose={() => setOpen(false)}>
+          <div className="grid-2" style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}>
+            {quick.map((q) => (
+              <button key={q.v} type="button" className={'btn' + (q.v === value ? ' primary' : '')} onClick={() => pick(q.v)}>{q.l}</button>
+            ))}
+          </div>
+          <label className="field"><span>Otra fecha</span>
+            <input className="input" type="date" defaultValue={value} max="2100-12-31" onChange={(e) => e.target.value && onChange(e.target.value)} />
+          </label>
+          <button type="button" className="btn primary lg block" onClick={() => setOpen(false)}>Listo · {shortDate(value)}</button>
+        </Sheet>
+      )}
+    </>
   );
 }
