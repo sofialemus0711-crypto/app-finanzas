@@ -46,7 +46,8 @@ controlar el dinero en cada banco y en efectivo, y ver en tiempo real cómo van 
 
 - Tipos: ahorros, corriente, billetera digital, efectivo, tarjeta de crédito (soportado para el futuro; hoy no se usa), inversión, otra.
 - Campos: nombre, tipo, ícono/color, saldo inicial, saldo actual (calculado).
-- Cuentas iniciales: los bancos que usa la usuaria + Efectivo (lista por confirmar).
+- **No hay cuentas predeterminadas:** cada usuario crea las suyas al empezar (pantalla de bienvenida guiada).
+  Ejemplo de la usuaria principal: Bancolombia y Efectivo.
 - **Todas** las cuentas suman al total disponible (no se excluye ninguna).
 - Se pueden **archivar** cuentas sin perder su historial.
 - **Transferencias** entre cuentas propias: no cuentan como ingreso ni egreso.
@@ -83,10 +84,10 @@ controlar el dinero en cada banco y en efectivo, y ver en tiempo real cómo van 
 ## 10. Diseño
 
 - Moderno, minimalista, identidad propia (referencia: Moneyfy).
-- Colores diferenciados para ingresos, egresos y balance; paleta acorde a la temática financiera (por elegir).
+- Paleta **Esmeralda**: verde esmeralda profundo como color principal con acentos dorados suaves; ingresos en verde, egresos en coral/rojo.
 - Modo claro y oscuro (automático según el sistema, con opción manual).
 - Interfaz **adaptada** a celular y a computador, no solo reducida.
-- Nombre de la app: por elegir.
+- Nombre de la app: **Monedi** (provisional).
 
 ## 11. Respaldo
 
@@ -113,7 +114,7 @@ controlar el dinero en cada banco y en efectivo, y ver en tiempo real cómo van 
 
 ## 14. Pendientes para cerrar la Fase 1
 
-- [ ] Lista de bancos/cuentas a crear
-- [ ] Lista de categorías y subcategorías
-- [ ] Nombre de la app
-- [ ] Paleta de colores
+- [x] Cuentas: cada usuario crea las suyas (usuaria principal: Bancolombia, Efectivo)
+- [ ] Lista de categorías y subcategorías (quitar "Eliani" de ingresos y "Boxeo" de egresos)
+- [x] Nombre de la app: Monedi (provisional)
+- [x] Paleta de colores: Esmeralda
