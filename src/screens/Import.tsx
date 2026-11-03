@@ -102,6 +102,7 @@ export function Import() {
   const [onlyReview, setOnlyReview] = useState(false);
   const [limit, setLimit] = useState(80);
   const [saving, setSaving] = useState(false);
+  const [bulkDate, setBulkDate] = useState('');
   const imgRef = useRef<HTMLInputElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const indexRef = useRef<ClassifierIndex | null>(null);
@@ -347,6 +348,15 @@ export function Import() {
                     <span style={{ fontWeight: 600 }}>Ver solo los que debo revisar ({movSelected.filter((r) => !r.choice || r.source === 'media' || r.source === 'ninguna').length})</span>
                     <input type="checkbox" checked={onlyReview} onChange={(e) => setOnlyReview(e.target.checked)} style={{ width: 22, height: 22, accentColor: 'var(--primary)' }} />
                   </label>
+                  <div className="row wrap" style={{ gap: 8 }}>
+                    <label className="field" style={{ flex: '1 1 150px' }}><span>Poner una misma fecha</span>
+                      <input className="input" type="date" value={bulkDate} onChange={(e) => setBulkDate(e.target.value)} style={{ minHeight: 40 }} />
+                    </label>
+                    <button className="btn" style={{ alignSelf: 'flex-end', minHeight: 40 }} disabled={!bulkDate}
+                      onClick={() => setMovRows((rs) => rs.map((r) => (r.include ? { ...r, date: bulkDate } : r)))}>
+                      Aplicar a los seleccionados
+                    </button>
+                  </div>
                   <div className="row" style={{ gap: 8 }}>
                     <button className="chip" onClick={() => setMovRows((rs) => rs.map((r) => ({ ...r, include: true })))}>Marcar todos</button>
                     <button className="chip" onClick={() => setMovRows((rs) => rs.map((r) => ({ ...r, include: false })))}>Desmarcar todos</button>
@@ -360,7 +370,6 @@ export function Import() {
                       <div className="row" style={{ gap: 8 }}>
                         <input type="checkbox" aria-label="Importar este movimiento" checked={r.include} onChange={(e) => updateMov(r.key, { include: e.target.checked })}
                           style={{ width: 22, height: 22, accentColor: 'var(--primary)', flex: 'none' }} />
-                        <span className="small muted" style={{ flex: 'none', width: 46, lineHeight: 1.2 }}>{compactDate(r.date)}</span>
                         <input className="input" style={{ minHeight: 40, fontSize: 14, padding: '0 10px' }} value={r.description} placeholder="Sin descripción"
                           aria-label="Descripción" onChange={(e) => updateMov(r.key, { description: e.target.value })} />
                         <button className={'chip ' + (r.kind === 'ingreso' ? 'amount-in' : 'amount-out')} style={{ flex: 'none', minHeight: 40, fontWeight: 700 }}
@@ -370,6 +379,12 @@ export function Import() {
                         </button>
                       </div>
                       <div className="row wrap" style={{ gap: 8 }}>
+                        <label className="chip" style={{ position: 'relative', minHeight: 40, flex: 'none' }} title="Cambiar fecha">
+                          <Icon name="calendar" size={16} /> {compactDate(r.date)}
+                          <input type="date" value={r.date} aria-label="Fecha del movimiento"
+                            onChange={(e) => e.target.value && updateMov(r.key, { date: e.target.value })}
+                            style={{ position: 'absolute', inset: 0, opacity: 0, width: '100%' }} />
+                        </label>
                         <select className="select grow" style={{ minHeight: 40, fontSize: 14, flexBasis: 200 }} value={r.choice} aria-label="Categoría"
                           onChange={(e) => chooseCategory(r, e.target.value)}>
                           <option value="">Elige categoría…</option>
