@@ -146,8 +146,8 @@ Los valores se usan como **presupuesto mensual** por categoría/subcategoría de
 ## 13. Fases
 
 1. Requerimientos y planificación ✅
-2. Diseño UX y estructura visual ← **actual**
-3. Cuentas, categorías, ingresos, egresos, transferencias
+2. Diseño UX y estructura visual ✅
+3. Cuentas, categorías, ingresos, egresos, transferencias ✅ (pendiente de validación)
 4. Dashboard, gráficos, resúmenes
 5. Registro rápido y optimización móvil
 6. Pruebas, seguridad y mejoras

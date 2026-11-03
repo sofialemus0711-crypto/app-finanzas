@@ -1,0 +1,21 @@
+{
+  "name": "Monedi",
+  "short_name": "Monedi",
+  "description": "Tus finanzas personales, rápido y claro.",
+  "lang": "es-CO",
+  "start_url": "./#/",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0B1512",
+  "theme_color": "#0F5E4B",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ],
+  "shortcuts": [
+    { "name": "Nuevo gasto", "url": "./#/nuevo?tipo=egreso" },
+    { "name": "Nuevo ingreso", "url": "./#/nuevo?tipo=ingreso" },
+    { "name": "Transferencia", "url": "./#/nuevo?tipo=transferencia" }
+  ]
+}
