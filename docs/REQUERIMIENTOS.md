@@ -60,6 +60,34 @@ controlar el dinero en cada banco y en efectivo, y ver en tiempo real cómo van 
 - Cada categoría tiene **ícono y color**.
 - Crear, editar, eliminar. Al eliminar una categoría con movimientos, la app pide **reasignarlos** a otra antes de borrar.
 
+### 6.1 Categorías iniciales de la usuaria principal
+
+Valores de referencia mensuales tomados de su hoja de Excel (uso por confirmar: ¿presupuesto?).
+
+**Egresos**
+
+| Categoría | Subcategorías | Valor ref. |
+|---|---|---:|
+| Gimnasio | — | 120.000 |
+| Salidas | Alimentación (100.000), Transporte (160.000), Extras (100.000) | 360.000 |
+| Universidad | Alimentación (180.000), Transporte (280.000), Gastos extra (40.000) | 500.000 |
+| Suplementos | — | 200.000 |
+| Gastos extra | — | 200.000 |
+| Insumos panes | — | 540.000 |
+| **Total** | | **1.920.000** |
+
+**Ingresos**
+
+| Categoría | Valor ref. |
+|---|---:|
+| Trabajo mamá | 600.000 |
+| Panes | 1.300.000 |
+| Papá | 260.000 |
+| Sostenimiento Sapiencia | 180.000 |
+| **Total** | **2.340.000** |
+
+(Se eliminaron "Boxeo" de egresos y "Eliani" de ingresos.)
+
 ## 7. Dashboard
 
 - Dinero total disponible y saldo por cuenta.
@@ -116,6 +144,7 @@ controlar el dinero en cada banco y en efectivo, y ver en tiempo real cómo van 
 ## 14. Pendientes para cerrar la Fase 1
 
 - [x] Cuentas: cada usuario crea las suyas (usuaria principal: Bancolombia, Efectivo)
-- [ ] Lista de categorías y subcategorías (quitar "Eliani" de ingresos y "Boxeo" de egresos)
+- [x] Lista de categorías y subcategorías (sección 6.1)
+- [ ] Confirmar uso de los valores de referencia y el concepto "Total mi aporte"
 - [x] Nombre de la app: Monedi (provisional)
 - [x] Paleta de colores: Esmeralda
