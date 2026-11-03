@@ -62,7 +62,7 @@ controlar el dinero en cada banco y en efectivo, y ver en tiempo real cómo van 
 
 ### 6.1 Categorías iniciales de la usuaria principal
 
-Valores de referencia mensuales tomados de su hoja de Excel (uso por confirmar: ¿presupuesto?).
+Los valores se usan como **presupuesto mensual** por categoría/subcategoría desde la versión 1 (avance "llevas X de Y"). Las alertas llegan en la Etapa 2.
 
 **Egresos**
 
@@ -87,6 +87,17 @@ Valores de referencia mensuales tomados de su hoja de Excel (uso por confirmar: 
 | **Total** | **2.340.000** |
 
 (Se eliminaron "Boxeo" de egresos y "Eliani" de ingresos.)
+
+### 6.2 Reglas especiales
+
+- **Gasto cubierto por un ingreso (Universidad ← Papá):** una categoría de egreso puede vincularse a una categoría
+  de ingreso que la financia. El dashboard muestra:
+  - **Total de gastos** (todos).
+  - **Mi aporte** = total de gastos − gastos de categorías cubiertas (equivale al "Total mi aporte" del Excel: 1.920.000 − 500.000 = 1.420.000).
+  - Tarjeta "Universidad": recibido de Papá vs. gastado.
+- **Ganancia del negocio (Panes):** tarjeta en el dashboard = ingresos "Panes" − egresos "Insumos panes"
+  (referencia: 1.300.000 − 540.000 = 760.000/mes). Diseñado de forma general ("proyecto" que agrupa una categoría
+  de ingreso y una de egreso) para poder crear otros negocios en el futuro.
 
 ## 7. Dashboard
 
@@ -134,8 +145,8 @@ Valores de referencia mensuales tomados de su hoja de Excel (uso por confirmar: 
 
 ## 13. Fases
 
-1. Requerimientos y planificación ← **actual**
-2. Diseño UX y estructura visual
+1. Requerimientos y planificación ✅
+2. Diseño UX y estructura visual ← **actual**
 3. Cuentas, categorías, ingresos, egresos, transferencias
 4. Dashboard, gráficos, resúmenes
 5. Registro rápido y optimización móvil
@@ -145,6 +156,9 @@ Valores de referencia mensuales tomados de su hoja de Excel (uso por confirmar: 
 
 - [x] Cuentas: cada usuario crea las suyas (usuaria principal: Bancolombia, Efectivo)
 - [x] Lista de categorías y subcategorías (sección 6.1)
-- [ ] Confirmar uso de los valores de referencia y el concepto "Total mi aporte"
+- [x] Valores de referencia = presupuesto mensual
+- [x] "Total mi aporte" = gastos sin Universidad (cubierta por Papá)
+
+**Fase 1 cerrada el 2026-11-03.**
 - [x] Nombre de la app: Monedi (provisional)
 - [x] Paleta de colores: Esmeralda
