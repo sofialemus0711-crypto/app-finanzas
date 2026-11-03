@@ -54,7 +54,8 @@ controlar el dinero en cada banco y en efectivo, y ver en tiempo real cómo van 
 
 ## 6. Categorías
 
-- La usuaria define su propia lista (no se cargan predeterminadas; lista por recibir).
+- **Cada usuario crea sus propias categorías** desde cero (no se cargan predeterminadas ni se copian entre usuarios).
+  La usuaria principal enviará su lista para precargarla en su cuenta.
 - Categorías de ingreso y de egreso, cada una con subcategorías opcionales.
 - Cada categoría tiene **ícono y color**.
 - Crear, editar, eliminar. Al eliminar una categoría con movimientos, la app pide **reasignarlos** a otra antes de borrar.
