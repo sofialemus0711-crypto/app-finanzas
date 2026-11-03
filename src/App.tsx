@@ -9,6 +9,7 @@ import { Categories } from './screens/Categories';
 import { Entry } from './screens/Entry';
 import { History } from './screens/History';
 import { ImportTemplate } from './screens/ImportTemplate';
+import { ImportCategories } from './screens/ImportCategories';
 import { Home } from './screens/Home';
 import { Onboarding } from './screens/Onboarding';
 import { Settings } from './screens/Settings';
@@ -62,6 +63,7 @@ function Shell() {
     case '/cuentas': page = <Accounts />; break;
     case '/categorias': page = <Categories key={params.get('tipo') ?? ''} initialKind={(params.get('tipo') as CategoryKind) || 'egreso'} />; break;
     case '/mas': page = <Settings />; break;
+    case '/importar-categorias': page = <ImportCategories />; break;
     default: page = <Home />;
   }
 
@@ -73,7 +75,7 @@ function Shell() {
       <nav className="sidebar" aria-label="Navegación principal">
         <div className="brand"><img src="./icon.svg" alt="" /> Monedi</div>
         {NAV.map((n) => (
-          <a key={n.path} href={'#' + n.path} className={'side-link' + (base === n.path ? ' active' : '')} aria-current={base === n.path ? 'page' : undefined}>
+          <a key={n.path} href={'#' + n.path} className={'side-link' + (base === n.path || (n.path === '/categorias' && base === '/importar-categorias') ? ' active' : '')} aria-current={base === n.path ? 'page' : undefined}>
             <Icon name={n.icon} size={20} /> {n.label}
           </a>
         ))}
@@ -92,7 +94,7 @@ function Shell() {
           <Icon name="plus" size={28} stroke={2.4} />
         </button>
         {[NAV[2], NAV[4]].map((n) => (
-          <a key={n.path} href={'#' + n.path} className={'tab' + (base === n.path || (n.path === '/mas' && base === '/categorias') ? ' active' : '')}>
+          <a key={n.path} href={'#' + n.path} className={'tab' + (base === n.path || (n.path === '/mas' && (base === '/categorias' || base === '/importar-categorias')) ? ' active' : '')}>
             <Icon name={n.icon} size={24} /> {n.label}
           </a>
         ))}

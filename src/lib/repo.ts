@@ -251,3 +251,86 @@ export async function createTemplate(input: TemplateInput): Promise<string> {
 export async function deleteTemplate(id: string): Promise<void> {
   await db.templates.delete(id);
 }
+
+/* ------------------------ Importar categorías ------------------------ */
+
+export interface ImportCategoryRow {
+  kind: 'ingreso' | 'egreso';
+  category: string;
+  subcategory: string;
+  amount: number;
+}
+
+const normName = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+const IMPORT_COLORS = ['#0F5E4B', '#5B9BD5', '#D46A9F', '#A47DC9', '#E0A030', '#C9A24A', '#2F8F8A', '#E8907D', '#3B6FB6', '#6E7F78'];
+
+/**
+ * Crea las categorías y subcategorías que no existan (comparando nombres sin tildes ni mayúsculas)
+ * y pone su presupuesto. Si una categoría nueva solo trae subcategorías, su presupuesto es la suma.
+ */
+export async function importCategories(
+  rows: ImportCategoryRow[],
+  opts: { updateBudgets: boolean; guessIcon: (name: string, kind: 'ingreso' | 'egreso') => string },
+): Promise<{ created: number; updated: number }> {
+  let created = 0;
+  let updated = 0;
+  await db.transaction('rw', db.categories, async () => {
+    const all = await db.categories.toArray();
+    const now = Date.now();
+    let colorIdx = all.filter((c) => c.parentId === null).length;
+    const findRoot = (kind: string, name: string) => all.find((c) => c.parentId === null && c.kind === kind && normName(c.name) === normName(name));
+    const findSub = (parentId: string, name: string) => all.find((c) => c.parentId === parentId && normName(c.name) === normName(name));
+    const newRoots = new Set<string>();
+    const explicitRootBudget = new Set<string>();
+
+    const add = async (c: Omit<import('../db/types').Category, 'id' | 'createdAt' | 'updatedAt' | 'order'>) => {
+      const cat = { ...c, id: newId(), order: all.filter((x) => x.parentId === c.parentId && x.kind === c.kind).length, createdAt: now, updatedAt: now };
+      await db.categories.add(cat);
+      all.push(cat);
+      created++;
+      return cat;
+    };
+
+    for (const r of rows) {
+      const name = r.category.trim();
+      if (!name) continue;
+      const amount = Math.max(0, Math.round(r.amount) || 0);
+      let root = findRoot(r.kind, name);
+      if (!root) {
+        root = await add({
+          name, kind: r.kind, parentId: null, icon: opts.guessIcon(name, r.kind),
+          color: IMPORT_COLORS[colorIdx++ % IMPORT_COLORS.length], budget: 0, coveredByCategoryId: null,
+        });
+        newRoots.add(root.id);
+      }
+      const subName = r.subcategory.trim();
+      if (!subName) {
+        if (amount > 0 && (newRoots.has(root.id) || opts.updateBudgets)) {
+          if (root.budget !== amount) {
+            await db.categories.update(root.id, { budget: amount, updatedAt: now });
+            if (!newRoots.has(root.id)) updated++;
+            root.budget = amount;
+          }
+          explicitRootBudget.add(root.id);
+        }
+        continue;
+      }
+      const sub = findSub(root.id, subName);
+      if (!sub) {
+        await add({ name: subName, kind: r.kind, parentId: root.id, icon: root.icon, color: root.color, budget: amount, coveredByCategoryId: null });
+      } else if (amount > 0 && opts.updateBudgets && sub.budget !== amount) {
+        await db.categories.update(sub.id, { budget: amount, updatedAt: now });
+        sub.budget = amount;
+        updated++;
+      }
+    }
+
+    // Categorías nuevas sin valor propio: presupuesto = suma de sus subcategorías
+    for (const id of newRoots) {
+      if (explicitRootBudget.has(id)) continue;
+      const sum = all.filter((c) => c.parentId === id).reduce((s, c) => s + c.budget, 0);
+      if (sum > 0) await db.categories.update(id, { budget: sum });
+    }
+  });
+  return { created, updated };
+}

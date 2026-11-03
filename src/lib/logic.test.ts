@@ -143,3 +143,29 @@ describe('respaldo', () => {
     expect(() => parseBackup('{"hola":1}')).toThrow();
   });
 });
+
+import { importCategories } from './repo';
+import { gridToStreams, guessIcon, parseStreams } from './importParse';
+
+describe('importar categorías', () => {
+  it('crea categorías, subcategorías y presupuestos sin duplicar', async () => {
+    await createCategory({ name: 'gimnasio', kind: 'egreso', parentId: null, icon: 'gym', color: '#000', budget: 0, coveredByCategoryId: null });
+    const { rows } = parseStreams(gridToStreams([
+      ['Categoría', 'Valor', null, 'Ingresos', 'Valor'],
+      ['Gimnasio', 120000, null, 'Papá', 260000],
+      ['Universidad - Alimentación', 180000, null, null, null],
+      ['Universidad - Transporte', 280000, null, null, null],
+    ]));
+    const r1 = await importCategories(rows, { updateBudgets: true, guessIcon });
+    expect(r1).toEqual({ created: 4, updated: 1 });
+    const cats = await db.categories.toArray();
+    const uni = cats.find((c) => c.name === 'Universidad')!;
+    expect(uni.budget).toBe(460000);
+    expect(uni.icon).toBe('grad');
+    expect(cats.find((c) => c.name === 'gimnasio')!.budget).toBe(120000);
+    // Importar de nuevo no duplica nada
+    const r2 = await importCategories(rows, { updateBudgets: true, guessIcon });
+    expect(r2).toEqual({ created: 0, updated: 0 });
+    expect(await db.categories.count()).toBe(5);
+  });
+});

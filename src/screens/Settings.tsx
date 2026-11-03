@@ -72,6 +72,10 @@ export function Settings() {
         <span className="row"><Icon name="grid" /> <strong>Categorías y presupuestos</strong></span>
         <Icon name="chevron" size={18} />
       </a>
+      <a className="card between" href="#/importar-categorias" style={{ color: 'inherit', textDecoration: 'none' }}>
+        <span className="row"><Icon name="upload" /> <strong>Importar categorías desde foto, Excel o texto</strong></span>
+        <Icon name="chevron" size={18} />
+      </a>
 
       <section className="card stack">
         <div className="between">
@@ -103,7 +107,7 @@ export function Settings() {
         <input ref={fileRef} type="file" accept="application/json,.json" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) onFile(f); e.target.value = ''; }} />
       </section>
 
-      <p className="small muted" style={{ textAlign: 'center' }}>Monedi · versión 0.3 (Fase 3)</p>
+      <p className="small muted" style={{ textAlign: 'center' }}>Monedi · versión 0.3.1</p>
 
       {newTemplate && <TemplateForm onClose={() => setNewTemplate(false)} />}
       {pending && (

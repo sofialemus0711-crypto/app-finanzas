@@ -22,10 +22,15 @@ export function Categories({ initialKind = 'egreso' }: { initialKind?: CategoryK
     <div className="container">
       <div className="between">
         <h1 className="h1">Categorías</h1>
+        <div className="row" style={{ gap: 8 }}>
+        <a className="icon-btn" href="#/importar-categorias" aria-label="Importar desde foto, Excel o texto" title="Importar desde foto, Excel o texto">
+          <Icon name="upload" size={20} />
+        </a>
         <button className="icon-btn" style={{ background: 'var(--primary)', color: 'var(--on-primary)', border: 'none' }} aria-label="Nueva categoría"
           onClick={() => setEditing({ cat: null, kind, parentId: null })}>
           <Icon name="plus" size={22} stroke={2.2} />
         </button>
+        </div>
       </div>
 
       <div className="seg" style={{ gridTemplateColumns: '1fr 1fr' }} role="tablist">
@@ -41,6 +46,7 @@ export function Categories({ initialKind = 'egreso' }: { initialKind?: CategoryK
         <div className="empty card">
           <p>Aún no tienes categorías de {kind === 'egreso' ? 'egresos' : 'ingresos'}.</p>
           <button className="btn primary" onClick={() => setEditing({ cat: null, kind, parentId: null })}>Crear la primera</button>
+          <a className="btn" href="#/importar-categorias"><Icon name="upload" size={18} /> Importar desde foto, Excel o texto</a>
         </div>
       )}
 

@@ -20,6 +20,8 @@ App de finanzas personales (PWA) para registrar ingresos, egresos y transferenci
 - **Saldos:** nunca se guardan "a mano": se calculan a partir de los movimientos,
   por eso editar o eliminar un movimiento siempre deja todo cuadrado.
 - **Montos:** enteros en pesos (COP), sin decimales.
+- **Importar categorías** (Categorías › botón de subir): desde una foto o captura, un Excel (.xlsx), un CSV o texto pegado.
+  Las imágenes se leen en el propio dispositivo (OCR en español con Tesseract); no se envían a ningún servidor.
 - **Respaldo:** Más › Respaldo permite descargar un `.json` completo, exportar a Excel (`.csv`) y restaurar.
 
 ## Desarrollo
